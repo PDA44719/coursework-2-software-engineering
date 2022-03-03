@@ -12,14 +12,15 @@ cc = ChartCreator('../dash_app/prepared_dataset.xlsx')  # Generate all the chart
 def init_dashboard(flask_app):
     dash_app = dash.Dash(server=flask_app,
                          routes_pathname_prefix="/dash_app/",
-                         external_stylesheets=[dbc.themes.LUX],
+                         external_stylesheets=["../static/css/bootstrap.css"]
                          )
 
     # Define the layout of the main page of the app
     main_page_layout = html.Div([
-        html.Br(),
-        html.H1(children='Film Dashboard', style={'textAlign': 'center'}),
-        html.Br(),
+        html.Header(className="container-fluid", children=[
+            html.Br(),
+            include_navbar(),
+        ]),
         html.Div(id='main_page_content'),
 
         # This row will contain the 4 image cards
@@ -150,7 +151,7 @@ def init_dashboard(flask_app):
     # Define the layout of the app
     dash_app.layout = html.Div([
         dcc.Location(id='url', refresh=False),
-        html.Div(id='page-content', children=[graph1_layout])
+        html.Div(id='page-content', children=[main_page_layout])
     ])
 
     init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4_layout, type4_1_row, type4_2_row, main_page_layout)
@@ -228,6 +229,21 @@ def create_checklist_card(checklist_id, checklist_options):
     return card
 
 
+def include_navbar():
+    navbar = html.Nav(className="navbar navbar-expand-lg navbar-dark bg-primary", children=[
+        html.A('Navbar', className="navbar-brand", href='#'),
+        html.Div(className="collapse navbar-collapse", id="navbarColor01", children=[
+            html.Ul(className="navbar-nav me-auto", children=[
+                html.Li(className="nav-item", children=[html.A('Home', className="nav-link", href="/")]),
+                html.Li(className="nav-item", children=[html.A('Dashboard', className="nav-link active", href="/dash_app/")]),
+                html.Li(className="nav-item", children=[html.A('Authorization', className="nav-link", href="/auth/")]),
+            ])
+        ]),
+    ])
+
+    return navbar
+
+
 def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4_layout, type4_1_row, type4_2_row, main_page_layout):
     # Define a series of callbacks to allow the user to interact with the page
     @dash_app.callback(Output('page-content', 'children'),
@@ -247,7 +263,6 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
             The layout of the page that will be displayed.
 
         """
-        print(pathname)
         if pathname == '/dash_app/graph-page-1':
             return graph1_layout
 
@@ -262,7 +277,6 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
 
         else:
             return main_page_layout
-
 
     @dash_app.callback(Output('graph_1', 'figure'),
                   Input('dropdown1', 'value'),
