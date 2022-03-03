@@ -7,13 +7,23 @@
   <div class="collapse navbar-collapse" id="navbarColor01">
     <ul class="navbar-nav me-auto">
         <li class="nav-item">
-          <a class="nav-link active" href="/">Home</a>
+            <!--If user is at home, then the navigation link of this section is active. Otherwise, it is not-->
+            {% if at_home %}
+            <a class="nav-link active" href="/">Home</a>
+            {% else %}
+            <a class="nav-link" href="/">Home</a>
+            {% endif %}
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/dash_app/">Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/auth/">Pricing</a>
+            <!--If user is at home, then the navigation link of this section is not active. Otherwise, it is-->
+            {% if at_home %}
+            <a class="nav-link" href="/auth/">Authorization</a>
+            {% else %}
+            <a class="nav-link active" href="/auth/">Authorization</a>
+            {% endif %}
         </li>
     </ul>
   </div>
