@@ -1,6 +1,13 @@
 {% extends 'layout.html' %}
 {% set at_home = False %}
 {% block content %}
-    <h1>Authorization Page</h1>
-    <p>This is the authorization page.</p>
+    <form method="POST" action="{{ url_for('auth.signup') }}">
+        {{ form.csrf_token }}
+        {{ form.first_name.label(class="form-label") }} {{ form.first_name(class="form-control") }} <br>
+        {{ form.last_name.label(class="form-label") }} {{ form.last_name(class="form-control") }} <br>
+        {{ form.email.label(class="form-label") }} {{ form.email(class="form-control") }} <br>
+        {{ form.password.label(class="form-label") }} {{ form.password(class="form-control") }} <br>
+        {{ form.password_repeat.label(class="form-label") }} {{ form.password_repeat(class="form-control") }} <br>
+        <input type="submit" value="Sign up">
+    </form>
 {% endblock %}
