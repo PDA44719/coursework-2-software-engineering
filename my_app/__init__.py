@@ -1,4 +1,7 @@
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
+
+csrf = CSRFProtect()
 
 
 def create_app(config_class_name):
@@ -8,9 +11,10 @@ def create_app(config_class_name):
     """
     app = Flask(__name__)
     app.config.from_object(config_class_name)
+    csrf.init_app(app)
 
-    from my_app.auth import auth_bp
-    from my_app.main import main_bp
+    from my_app.auth.routes import auth_bp
+    from my_app.main.routes import main_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
 
