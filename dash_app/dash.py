@@ -236,7 +236,7 @@ def include_navbar():
             html.Ul(className="navbar-nav me-auto", children=[
                 html.Li(className="nav-item", children=[html.A('Home', className="nav-link", href="/")]),
                 html.Li(className="nav-item", children=[html.A('Dashboard', className="nav-link active", href="/dash_app/")]),
-                html.Li(className="nav-item", children=[html.A('Authorization', className="nav-link", href="/auth/")]),
+                html.Li(className="nav-item", children=[html.A('Authorization', className="nav-link", href="/login/")]),
             ])
         ]),
     ])
