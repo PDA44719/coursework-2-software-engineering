@@ -1,12 +1,21 @@
 {% extends 'layout.html' %}
 {% set at_home = False %}
 {% block content %}
-    <form method="POST" action="{{ url_for('auth.signup') }}">
+    {# Display the form validation errors #}
+    {% if form.errors %}
+        <div class="alert alert-warning" role="alert">
+            {% for field, errors in form.errors.items() %}
+                {{ form[field].label }}: {{ ', '.join(errors) }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
         {{ form.csrf_token }}
         {{ form.email.label(class="form-label") }} {{ form.email(class="form-control") }} <br>
         {{ form.password.label(class="form-label") }} {{ form.password(class="form-control") }} <br>
-        {{ form.remember_me.label(class="form-label") }} {{ form.remember_me(class="form-check-label") }} <br>
-        <input type="submit" value="Sign up">
+        {{ form.remember.label(class="form-label") }} {{ form.remember(class="form-check-label") }} <br>
+        <input type="submit" value="Log in">
     </form>
     <a class="link-primary" href="/auth/">New to FilmSys?</a>
 {% endblock %}
