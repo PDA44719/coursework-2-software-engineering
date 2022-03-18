@@ -15,14 +15,18 @@
             {% endif %}
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/dash_app/">Dashboard</a>
+            <a class="nav-link" href="{{ url_for("main.dash_app") }}">Dashboard</a>
         </li>
         <li class="nav-item">
-            <!--If user is at home, then the navigation link of this section is not active. Otherwise, it is-->
-            {% if at_home %}
+            <!--If user is at home and has not been authenticated-->
+            {% if at_home and current_user.is_anonymous %}
             <a class="nav-link" href="{{ url_for("auth.login") }}">Authorization</a>
-            {% else %}
+            <!--If user is in the authorization section and has not been authenticated-->
+            {% elif current_user.is_anonymous %}
             <a class="nav-link active" href="{{ url_for("auth.login") }}">Authorization</a>
+            <!--If the user has already been authenticated-->
+            {% else %}
+            <a class="nav-link" href="{{ url_for("auth.logout") }}">Logout</a>
             {% endif %}
         </li>
     </ul>
