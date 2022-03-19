@@ -1,6 +1,16 @@
 {% extends 'layout.html' %}
 {% set at_home = True %}
 {% block content %}
+    {# Displays flashed messages on a page #}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     <h1>Home Page</h1>
     <p>This is the home page.</p>
 {% endblock %}
