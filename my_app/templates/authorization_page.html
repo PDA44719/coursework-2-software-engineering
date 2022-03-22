@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% set at_home = False %}
+{% set location = 'authorization' %}
 {% block content %}
     {# Display the form validation errors #}
     {% if form.errors %}
@@ -19,5 +19,5 @@
         {{ form.password_repeat.label(class="form-label") }} {{ form.password_repeat(class="form-control") }} <br>
         <input type="submit" value="Sign up">
     </form>
-    <a class="link-primary" href="{{ url_for("auth-login") }}">Already have an account?</a>
+    <a class="link-primary" href="{{ url_for("auth.login") }}">Already have an account?</a>
 {% endblock %}
