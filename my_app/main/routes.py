@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
-from my_app.main.forms import ProfileForm, Profile
-from my_app.models import User
+from my_app.main.forms import ProfileForm, Profile, ProposalForm
+from my_app.models import User, Proposal
 from my_app import photos, db
 
 main_bp = Blueprint('main', __name__)
@@ -27,9 +27,28 @@ def dash_app():
 def profile():
     profile = Profile.query.join(User, User.id == Profile.user_id).filter(User.id == current_user.id).first()
     if profile is not None:
-        return redirect(url_for('main.update_profile'))
+        return render_template('profile_options.html', already_has_profile=True)
     else:
-        return redirect(url_for('main.create_profile'))
+        return render_template('profile_options.html', already_has_profile=False)
+
+
+@main_bp.route('/create_proposal', methods=['GET', 'POST'])
+@login_required
+def create_proposal():
+    form = ProposalForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        proposal = Proposal(title=form.title.data, plot=form.plot.data, user_id=current_user.id)
+        db.session.add(proposal)
+        db.session.commit()
+        return redirect('main.index')
+    return render_template('proposal_form.html', form=form)
+
+
+@main_bp.route('/display_proposals')
+@login_required
+def view_proposals():
+    proposals = Proposal.query.all()
+    return render_template('proposals.html', proposals=proposals)
 
 
 @main_bp.route('/create_profile', methods=['GET', 'POST'])
@@ -55,6 +74,7 @@ def update_profile():
     profile = Profile.query.join(User, User.id == Profile.user_id).filter_by(id=current_user.id).first()  # Find the existing profile for this user
     form = ProfileForm(
         obj=profile)  # Pre-populate the form by loading the profile using obj=. This relies on the field names in the Profile class in model matching the field names in the ProfileForm class, otherwise you have to explicitly state each field e.g. if the form used bio and the model used biography you would need to add  bio = profile.biography
+
     if request.method == 'POST' and form.validate_on_submit():
         if 'photo' in request.files:
             filename = photos.save(request.files['photo'])
