@@ -1,0 +1,7 @@
+{% extends 'layout.html' %}
+{% set location = 'none_of_the_above' %}
+{% block content %}
+    {% for proposal in proposals %}
+    <div><p>Title: {{ proposal.title }}<br>Plot: {{ proposal.plot }}</p></div>
+    {% endfor %}
+{% endblock %}
