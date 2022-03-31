@@ -16,3 +16,8 @@ class ProfileForm(FlaskForm):
         # If that username is already being used by someone who is not the current user
         if profile is not None and profile.user != current_user:
             raise ValidationError('An account is already registered with that username')
+
+
+class ProposalForm(FlaskForm):
+    title = StringField(label='Title', validators=[DataRequired()])
+    plot = TextAreaField(label='Plot', validators=[DataRequired()])
