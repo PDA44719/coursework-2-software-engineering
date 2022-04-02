@@ -22,15 +22,17 @@ class SignupForm(FlaskForm):
 class LoginForm(FlaskForm):
     email = EmailField(label='Email address', validators=[DataRequired()])
     password = PasswordField(label='Password', validators=[DataRequired()])
-    remember_me = BooleanField(label='Remember me')
+    remember = BooleanField(label='Remember me')
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user is None:
             raise ValidationError('That email address is not registered')
-        return user
 
-    def validate_password(self, email, password):
-        user = self.validate_email(email)
-        if user.password != password.data:
-            raise ValidationError('The password is incorrect')
+    def validate_password(self, password):
+        user = User.query.filter_by(email=self.email.data).first()
+        if user is None:
+            return  # Because there is no account with that email address
+        if not user.check_password(password.data):
+            raise ValidationError('Incorrect password.')
+        return
