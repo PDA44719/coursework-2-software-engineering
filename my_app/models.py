@@ -38,3 +38,21 @@ class Proposal(db.Model):
     title = db.Column(db.Text, nullable=False)
     plot = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    characters = db.relationship("Character")
+    genres = db.relationship("Genre")
+
+
+class Character(db.Model):
+    __tablename__ = "character"
+    id = db.Column(db.Integer, primary_key=True)
+    character_name = db.Column(db.Text, nullable=False)
+    character_description = db.Column(db.Text, nullable=False)
+    proposal_id = db.Column(db.Integer, db.ForeignKey("proposal.id"))
+
+
+class Genre(db.Model):
+    __tablename__ = "genre"
+    id = db.Column(db.Integer, primary_key=True)
+    genre_name = db.Column(db.Text, nullable=False)
+    proposal_id = db.Column(db.Integer, db.ForeignKey("proposal.id"))
+
