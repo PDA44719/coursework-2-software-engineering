@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% set location = 'none_of_the_above' %}
+{% block content %}
+    <br>
+    <h3 class="text-center">{{ proposal.title }}</h3>
+    <h5><u>PROPOSAL PLOT</u></h5>
+    <p>{{ proposal.plot }}</p>
+    <h5><u>Characters</u></h5>
+    {% for character in characters %}
+        <p class="fw-bold fst-italic">{{ character['character_name'] }}:
+        <span class="fw-normal fst-normal">{{ character['character_description'] }}</span>
+        </p>
+    {% endfor %}
+    <h5><u>Proposal Genres:</u>
+    {% for genre in genres %}
+        <span class="badge bg-primary">{{ genre.genre_name }}</span>
+    {% endfor %} </h5>
+
+
+{% endblock %}
