@@ -41,3 +41,7 @@ class ProposalForm(FlaskForm):
             raise ValidationError('5 characters is the limit')
         elif number_of_characters == 0:
             raise ValidationError('At least 1 character needs to be defined')
+
+
+class MessageForm(FlaskForm):
+    text = TextAreaField(label='Message', validators=[DataRequired()])
