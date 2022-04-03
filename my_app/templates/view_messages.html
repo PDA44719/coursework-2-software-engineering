@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+{% set location = 'messages' %}
+{% block content %}
+    {% for user, message in users_and_messages  %}
+        {% if message %}
+        <div class="container">
+        <div class="row">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">{{ user.first_name + " " + user.last_name }}</h5>
+            <p class="card-text">{{ message.text }}</p>
+            <a href="{{ url_for('main.send_message', user_id=user.id) }}" class="btn btn-primary">
+                View Message
+            </a>
+          </div>
+        </div>
+        </div>
+        </div>
+        <br>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
