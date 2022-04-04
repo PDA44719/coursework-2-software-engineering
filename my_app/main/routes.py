@@ -1,29 +1,14 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
-from my_app.main.forms import ProfileForm, Profile, ProposalForm, MessageForm
+from my_app.main.forms import ProfileForm, Profile, ProposalForm
 from my_app.models import User, Proposal, Character, Genre, Message, Chat, LastTimeChecked
 from my_app import photos, db
 from sqlalchemy import or_, desc, update
 from sqlalchemy.sql import select
 from datetime import datetime
+from my_app.messaging.routes import check_if_unread
 
 main_bp = Blueprint('main', __name__)
-
-
-def check_if_unread():
-    time_checks = LastTimeChecked.query.filter_by(user_id=current_user.id).all()
-    for time_check in time_checks:
-        chat = Chat.query.get(time_check.chat_id)
-        last_message = Message.query.filter_by(chat_id=chat.id).order_by(desc('post_time')).first()
-        print('Yo')
-        print(last_message.post_time)
-        print(time_check.time)
-        print('Yo')
-        if last_message.post_time > time_check.time:
-            print('It worked')
-            return True
-
-    return False
 
 
 @main_bp.route('/')
@@ -46,9 +31,9 @@ def dash_app():
 def profile():
     profile = Profile.query.join(User, User.id == Profile.user_id).filter(User.id == current_user.id).first()
     if profile is not None:
-        return render_template('profile_options.html', already_has_profile=True)
+        return render_template('profile_options.html', already_has_profile=True, unread_messages=check_if_unread())
     else:
-        return render_template('profile_options.html', already_has_profile=False)
+        return render_template('profile_options.html', already_has_profile=False, unread_messages=check_if_unread())
 
 
 @main_bp.route('/create_proposal', methods=['GET', 'POST'])
@@ -82,7 +67,7 @@ def create_proposal():
             db.session.commit()
 
             return redirect(url_for('main.index'))
-    return render_template('proposal_form.html', form=form)
+    return render_template('proposal_form.html', form=form, unread_messages=check_if_unread())
 
 
 @main_bp.route('/display_proposals')
@@ -90,7 +75,7 @@ def create_proposal():
 def view_proposals():
     proposals = Proposal.query.all()
     genres = Genre.query.all()
-    return render_template('proposals.html', proposals=proposals, genres=genres)
+    return render_template('proposals.html', proposals=proposals, genres=genres, unread_messages=check_if_unread())
 
 
 @main_bp.route('/display_proposals/<proposal_id>')
@@ -102,74 +87,78 @@ def view_specific_proposal(proposal_id):
     print('Hey')
     proposal_genres = Genre.query.filter_by(proposal_id=proposal_id)
     proposal_characters = Character.query.filter_by(proposal_id=proposal_id)
+    proposal_user = User.query.get(proposal.user_id)
     print(proposal_genres)
     print('Hey')
     return render_template('specific_proposal.html', proposal=proposal, genres=proposal_genres,
-                           characters=proposal_characters)
+                           characters=proposal_characters, user=proposal_user, unread_messages=check_if_unread())
 
 
-@main_bp.route('/send_message/<user_id>', methods=['GET', 'POST'])
+@main_bp.route('/my_proposals')
 @login_required
-def send_message(user_id):
-    if Chat.query.filter_by(user_1_id=current_user.id, user_2_id=user_id).first() is not None:
-        print('Hey')
-        chat = Chat.query.filter_by(user_1_id=current_user.id, user_2_id=user_id).first()
-        time_check_current_user = LastTimeChecked.query.filter_by(chat_id=chat.id, user_id=current_user.id).first()
-
-    elif Chat.query.filter_by(user_1_id=user_id, user_2_id=current_user.id).first() is not None:
-        print('Ho')
-        chat = Chat.query.filter_by(user_1_id=user_id, user_2_id=current_user.id).first()
-        time_check_current_user = LastTimeChecked.query.filter_by(chat_id=chat.id, user_id=current_user.id).first()
-    else:
-        print('Huhu')
-        chat = Chat(user_1_id=current_user.id, user_2_id=user_id)  # Create the chat
-        db.session.add(chat)
-        db.session.commit()
-        time_check_current_user = LastTimeChecked(time=datetime.now(), chat_id=chat.id, user_id=current_user.id)  # Create the time checks
-        time_check_user_2 = LastTimeChecked(time=datetime.now(), chat_id=chat.id, user_id=user_id)
-        db.session.add(time_check_current_user)
-        db.session.add(time_check_user_2)
-        db.session.commit()
-        print(chat.id)
-        print('Huhu')
-
-    form = MessageForm()
-    if request.method == 'POST' and form.validate_on_submit():
-        message = Message(text=form.text.data, post_time=datetime.now(), user_sender_id=current_user.id,
-                          user_recipient_id=user_id, chat_id=chat.id)
-        db.session.add(message)
-        db.session.commit()
-        return redirect(url_for('main.send_message', user_id=user_id))
-    print('Poop')
-    print(Message.query.filter_by(chat_id=chat.id).first())
-    print('Poop')
-    chat_messages = Message.query.filter_by(chat_id=chat.id)
-    recipient_user = User.query.get(user_id)
-    time_check_current_user.time = datetime.now()
-    db.session.add(time_check_current_user)
-    db.session.commit()
-    return render_template('send_message.html', form=form, messages=chat_messages, recipient=recipient_user)
+def view_my_proposals():
+    my_proposals = Proposal.query.filter_by(user_id=current_user.id).all()
+    print('Woo')
+    print(my_proposals)
+    print('Woo')
+    return render_template('my_proposals.html', proposals=my_proposals, unread_messages=check_if_unread())
 
 
-@main_bp.route('/view_messages')
+@main_bp.route('/edit_proposal/<proposal_id>', methods=['GET', 'POST'])
 @login_required
-def view_messages():
-    user_chats_1 = Chat.query.filter_by(user_1_id=current_user.id).all()
-    user_chats_2 = Chat.query.filter_by(user_2_id=current_user.id).all()
-    user_chats = user_chats_1 + user_chats_2
-    users = []
-    messages = []
-    for chat in user_chats:
-        last_message = Message.query.filter_by(chat_id=chat.id).order_by(desc('post_time')).first()
-        id_other_user = chat.user_1_id if chat.user_1_id != current_user.id else chat.user_2_id  # Get the id of the other user involved in the chat
-        other_user = User.query.get(id_other_user)  # Grab the user
-        users.append(other_user)
-        messages.append(last_message)
+def edit_proposal(proposal_id):
+    proposal = Proposal.query.get(proposal_id)
+    characters = Character.query.filter_by(proposal_id=proposal_id).all()
+    genres = Genre.query.filter_by(proposal_id=proposal_id).all()
+    form = ProposalForm(title=proposal.title, plot=proposal.plot,
+                        characters=[{character.character_name: character.character_description} for character in\
+                                    characters],
+                        genres=[genre.genre_name for genre in genres])
+    if request.method == 'POST':
+        if request.form['button'] == 'Add Character':
+            form.characters.append_entry()
+        if request.form['button'] == 'Remove Character':
+            form.characters.pop_entry()
+        if request.form['button'] == 'Add Genre':
+            form.genres.append_entry()
+        if request.form['button'] == 'Remove Genre':
+            form.genres.pop_entry()
+        if request.form['button'] == 'Submit Proposal' and form.validate_on_submit():
+            proposal.title = form.title.data
+            proposal.plot = form.plot.data
+            for i in range(5):  # Maximum of 5 characters per proposal
+                try:
+                    characters[i].character_name = form.characters.data[i]['character_name']
+                    characters[i].character_description = form.characters.data[i]['character_description']
+                except IndexError:
+                    # i is out of range of both the form characters and the available characters
+                    if i not in range(len(characters)) and i not in range(len(form.characters.data)):
+                        break
+                    elif i not in range(len(characters)):
+                        character = Character(character_name=form.characters.data[i]['character_name'],
+                                              character_description=form.characters.data[i]['character_description'],
+                                              proposal_id=proposal.id)
+                        db.session.add(character)
+                    else:  # Less characters where input than the ones previously stored
+                        db.session.delete(characters[i])
 
-    for message in messages:
-        print(message)
+            for i in range(3):
+                try:
+                    genres[i].genre_name = form.genres.data[i]['genre']
+                except IndexError:  # New genre must be created
+                    if i not in range(len(genres)) and i not in range(len(form.genres.data)):
+                        break
+                    elif i not in range(len(genres)):
+                        genre = Genre(genre_name=form.genres.data[i]['genre'], proposal_id=proposal.id)
+                        db.session.add(genre)
+                    else:
+                        db.session.delete(genres[i])
 
-    return render_template('view_messages.html', users_and_messages=zip(users, messages))
+            db.session.commit()
+
+            return redirect(url_for('main.view_my_proposals'))
+
+    return render_template('proposal_form.html', form=form, unread_messages=check_if_unread())
 
 
 @main_bp.route('/create_profile', methods=['GET', 'POST'])
@@ -186,7 +175,7 @@ def create_profile():
         db.session.add(p)  # Add the new Profile to the database session
         db.session.commit()  # This saves the new Profile to the database
         return redirect(url_for('main.display_profiles', username=p.username))
-    return render_template('profile.html', form=form)
+    return render_template('profile.html', form=form, unread_messages=check_if_unread())
 
 
 @main_bp.route('/update_profile', methods=['GET', 'POST'])
@@ -203,7 +192,7 @@ def update_profile():
         profile.username = form.username.data  # Updates the user field
         db.session.commit()  # Save the changes to the database
         return redirect(url_for('main.display_profiles', username=profile.username))
-    return render_template('profile.html', form=form)
+    return render_template('profile.html', form=form, unread_messages=check_if_unread())
 
 
 @main_bp.route('/display_profiles', methods=['POST', 'GET'])
@@ -229,4 +218,4 @@ def display_profiles(username=None):
         url = url_for('static', filename='img/'+result.photo)  # uses the global photos plus the photo file name to determine the full url path
         urls.append(url)
     return render_template('display_profile.html',
-                           profiles=zip(results, urls))  # Note the zip to pass both lists as a parameter
+                           profiles=zip(results, urls), unread_messages=check_if_unread())  # Note the zip to pass both lists as a parameter
