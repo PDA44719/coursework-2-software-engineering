@@ -9,6 +9,7 @@ from flask_login import current_user
 movie_genres = ['Science Fiction', 'Adventure', 'Action', 'Fantasy', 'Animation', 'Family', 'Music', 'Comedy', 'War',
                 'Thriller', 'Crime', 'Romance', 'History', 'Horror', 'Mystery', 'Drama', 'Western', 'Documentary']
 
+
 class ProfileForm(FlaskForm):
     username = StringField(label='Username', validators=[DataRequired()])
     photo = FileField(label='Profile Picture', validators=[FileAllowed(photos, 'Images only!')])
@@ -41,7 +42,3 @@ class ProposalForm(FlaskForm):
             raise ValidationError('5 characters is the limit')
         elif number_of_characters == 0:
             raise ValidationError('At least 1 character needs to be defined')
-
-
-class MessageForm(FlaskForm):
-    text = TextAreaField(label='Message', validators=[DataRequired()])
