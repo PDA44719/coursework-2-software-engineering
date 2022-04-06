@@ -9,7 +9,7 @@
             {% endfor %}
         </div>
     {% endif %}
-
+    {# Display the signup form #}
     <form method="POST" action="{{ url_for('auth.signup') }}">
         {{ form.csrf_token }}
         {{ form.first_name.label(class="form-label") }} {{ form.first_name(class="form-control") }} <br>
@@ -19,5 +19,6 @@
         {{ form.password_repeat.label(class="form-label") }} {{ form.password_repeat(class="form-control") }} <br>
         <input type="submit" value="Sign up">
     </form>
+    {# Link to login page (if the user has already has an account) #}
     <a class="link-primary" href="{{ url_for("auth.login") }}">Already have an account?</a>
 {% endblock %}

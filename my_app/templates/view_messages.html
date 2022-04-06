@@ -1,22 +1,55 @@
 {% extends 'layout.html' %}
 {% set location = 'messages' %}
 {% block content %}
-    {% for user, message in users_and_messages  %}
-        {% if message %}
-        <div class="container">
-        <div class="row">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">{{ user.first_name + " " + user.last_name }}</h5>
-            <p class="card-text">{{ message.text }}</p>
-            <a href="{{ url_for('main.send_message', user_id=user.id) }}" class="btn btn-primary">
-                View Message
-            </a>
-          </div>
-        </div>
-        </div>
-        </div>
-        <br>
+    {# If there are any flashed messages, display them #}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-warning" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
         {% endif %}
-    {% endfor %}
+    {% endwith %}
+    {# Form to find a specific user with whom the current user would like to chat #}
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        {{ form.user.label(class="form-label") }} {{ form.user(class="form-control") }} <br>
+        <input type="submit" name="button" value="Find User">
+    </form>
+    {% if no_messages %}
+        <br><h4 class="text-center">You have no messages</h4>
+    {% else %}
+        {# Go through all the users, last messages and unreads (whether a chat has unread messages) of each user chat #}
+        {% for user, message, unread in users_and_messages_and_unreads %}
+            {# If the last message is not None (the chat contains at least one message) #}
+            {% if message %}
+                <div class="container">
+                    <div class="row">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ user.first_name + " " + user.last_name + ": " + user.email }}
+                                </h5>
+                                <p class="card-text">{{ message.text }}
+                                {# If the last message was unread, display a notification symbol #}
+                                {% if unread %}
+                                    <span class="position-relative top-0 start-0 translate-middle badge border
+                                                 border-light rounded-circle bg-danger p-2">
+                                        <span class="visually-hidden">unread messages</span>
+                                    </span>
+                                {% endif %}
+                                </p>
+                                {# Button to open a specific chat #}
+                                <a href="{{ url_for('message.send_message', user_id=user.id) }}" class="btn
+                                                                                                        btn-primary">
+                                    View Chat
+                                </a>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 {% endblock %}

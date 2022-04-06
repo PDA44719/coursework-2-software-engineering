@@ -1,16 +1,9 @@
 {% extends 'layout.html' %}
 {% set location = 'home' %}
 {% block content %}
-    {# Displays flashed messages on a page #}
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <h1>Home Page</h1>
-    <p>This is the home page.</p>
+    <br><br><br><br><br>
+    <h1 class="text-center">{{ 'Hello ' + user_name + "," if user_name}} welcome to FilmApp</h1>
+    <br>
+    <h3 class="text-muted">An Application in which users can post their film <u>proposals</u>, view the latest film data
+                           through a series of carefully crafted <u>charts</u> and <u>chat</u> with other users.</h3>
 {% endblock %}

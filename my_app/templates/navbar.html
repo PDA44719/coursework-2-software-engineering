@@ -1,37 +1,51 @@
+{# Macro that will create a navigation link. location_for_active is a variable that defines the user location at which
+the link will be set as active. The variable location (passed when rendering the template) informs about the current
+location of the user #}
 {% macro create_link(location_for_active, link_url, link_name) %}
-    {% if location == location_for_active %}
-    <a class="nav-link active" href="{{ url_for(link_url) }}">{{ link_name }}</a>
-    {% else %}
-    <a class="nav-link" href="{{ url_for(link_url) }}">{{ link_name }}</a>
-    {% endif %}
+    <a class="nav-link {{ 'active' if location == location_for_active }}" href="{{ url_for(link_url) }}">
+        {{ link_name }}
+        {# If there are any unread messages, display a notification symbol (red dot) over the Messages link #}
+        {% if unread_messages and link_name == "Messages" %}
+            <span class="position-relative top-0 start-0 translate-middle badge border border-light rounded-circle
+                         bg-danger p-2"><span class="visually-hidden">unread messages</span></span>
+        {% endif %}
+    </a>
 {%- endmacro %}
 
+{# Create the navigation bar #}
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <a class="navbar-brand" href="#">Navbar</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-
-  <div class="collapse navbar-collapse" id="navbarColor01">
-    <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-            {{ create_link('home', 'main.index', 'Home') }}
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for("main.dash_app") }}">Dashboard</a>
-        </li>
-        <li class="nav-item">
-            {{ create_link('profile', 'main.profile', 'Profile') }}
-        </li>
-
-        <li class="nav-item">
-            <!--If user is at home and has not been authenticated-->
-            {% if not current_user.is_anonymous %}
-            <a class="nav-link" href="{{ url_for("auth.logout") }}">Logout</a>
-            {% else %}
-            {{ create_link('authorization', 'auth.login', 'Authorization') }}
-            {% endif %}
-        </li>
-    </ul>
-  </div>
+    <a class="navbar-brand">FilmApp</a>  {# Name of the app #}
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    {# Define the different navigation links #}
+    <div class="collapse navbar-collapse" id="navbarColor01">
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+                {{ create_link('home', 'main.index', 'Home') }}
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for("main.dash_app") }}">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                {{ create_link('proposals', 'forum.view_proposals', 'Proposals') }}
+            </li>
+            <li class="nav-item">
+                {{ create_link('my_proposals', 'forum.view_my_proposals', 'My Proposals') }}
+            </li>
+            <li class="nav-item">
+                {{ create_link('messages', 'message.view_messages', 'Messages') }}
+            </li>
+            <li class="nav-item">
+                {# If user is at home and has been authenticated #}
+                {% if not current_user.is_anonymous %}
+                    {# Logout link can never be active #}
+                    <a class="nav-link" href="{{ url_for("auth.logout") }}">Logout</a>
+                {% else %}
+                    {{ create_link('authorization', 'auth.login', 'Authorization') }}
+                {% endif %}
+            </li>
+        </ul>
+    </div>
 </nav>

@@ -1,7 +1,53 @@
 {% extends 'layout.html' %}
-{% set location = 'none_of_the_above' %}
+{% set location = 'proposals' %}
 {% block content %}
+    {# If there are any flashed messages, display them #}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-warning" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% if not proposals %}
+        <br><h4>No proposals have been submitted</h4>
+    {% endif %}
+    {# Go through each proposal in the database #}
     {% for proposal in proposals %}
-    <div><p>Title: {{ proposal.title }}<br>Plot: {{ proposal.plot }}</p></div>
+        <div class="container">
+            <div class="row">
+                {# If the proposal was uploaded by the current user, display it in a different color #}
+                <div class="card {{ 'bg-info text-white' if proposal.user_id == current_user.id }}">
+                    <div class="card-body">
+                        {# Show (Posted By You) if the current user uploaded the proposal #}
+                        <h5 class="card-title">{{ proposal.title }}
+                                               {{' (Posted By You)' if proposal.user_id == current_user.id}}</h5>
+                        {# If the proposal plot has less than 400 characters, display the plot entirely #}
+                        {% if proposal.plot|length < 400 %}
+                            <p class="card-text">{{ proposal.plot }}</p>
+                        {# If the proposal plot is longer than 400 characters, only display the first 400 #}
+                        {% else %}
+                            <p class="card-text">{{ proposal.plot[:400] + "..." }}</p>
+                        {% endif %}
+                        <p class="card-text">
+                        {# Display the genres of the proposal #}
+                        {% for genre in genres %}
+                          {% if genre.proposal_id == proposal.id %}
+                              <span class="badge bg-primary">{{ genre.genre_name }}</span>
+                          {% endif %}
+                        {% endfor %}
+                        </p>
+                        {# Button to view the information of a specific proposal #}
+                        <a href="{{ url_for('forum.view_specific_proposal', proposal_id=proposal.id) }}"
+                           class="btn btn-primary">
+                            View Proposal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
     {% endfor %}
 {% endblock %}

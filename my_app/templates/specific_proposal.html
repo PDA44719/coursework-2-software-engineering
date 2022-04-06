@@ -1,20 +1,29 @@
 {% extends 'layout.html' %}
-{% set location = 'none_of_the_above' %}
+{% set location = 'proposals' %}
 {% block content %}
     <br>
+    {# Button to go back to viewing all the proposals #}
+    <a href="{{ url_for('forum.view_proposals') }}" class="btn btn-primary"><- Go back</a>
+    <br><br>
     <h3 class="text-center">{{ proposal.title }}</h3>
     <h5><u>PROPOSAL PLOT</u></h5>
     <p>{{ proposal.plot }}</p>
     <h5><u>Characters</u></h5>
+    {# Display the information about each character in the proposal #}
     {% for character in characters %}
         <p class="fw-bold fst-italic">{{ character['character_name'] }}:
-        <span class="fw-normal fst-normal">{{ character['character_description'] }}</span>
+            <span class="fw-normal fst-normal">{{ character['character_description'] }}</span>
         </p>
     {% endfor %}
-    <h5><u>Proposal Genres:</u>
+    <h5><u>Proposal Genres</u></h5>
+    {# Display each genre in the proposal #}
     {% for genre in genres %}
-        <span class="badge bg-primary">{{ genre.genre_name }}</span>
-    {% endfor %} </h5>
-
-
+        <h5 class="badge bg-primary">{{ genre.genre_name }}</h5>
+    {% endfor %}
+    <br>
+    <h5><u>Posted by</u></h5>
+    {# Create a link that will allow users to open the chat with the proposal's poster #}
+    <a class="link-info" href="{{ url_for('message.send_message', user_id=user.id) }}">
+        {{ user.first_name + " " + user.last_name }}
+    </a>
 {% endblock %}

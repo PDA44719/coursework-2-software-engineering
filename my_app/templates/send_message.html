@@ -1,37 +1,36 @@
 {% extends 'layout.html' %}
 {% set location = 'messages' %}
 {% block content %}
-    {# Display the form validation errors #}
-    {% if form.errors %}
-        <div class="alert alert-warning" role="alert">
-            {% for field, errors in form.errors.items() %}
-                {{ form[field].label }}: {{ ', '.join(errors) }}
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <h4>{{ recipient.first_name + " " + recipient.last_name }}</h4>
+    <br>
+    {# Button to go back to viewing all the current user's chats #}
+    <a href="{{ url_for('message.view_messages') }}" class="btn btn-primary"><- Go back</a>
+    <br><br>
+    <h4>{{ recipient.first_name + " " + recipient.last_name + ": " + recipient.email }}</h4>
+    {# Go through each of the messages inside a chat #}
     {% for message in messages %}
-    <div class="container">
-    <div class="row">
-    {% if message.user_sender_id == current_user.id %}
-    <div class="col"></div>
-    <div class="card text-dark bg-light mb-3 col-7">
-      <div class="card-body">
-        <p class="card-text">{{ message.text }}</p>
-      </div>
-    </div>
-    {% else %}
-    <div class="card text-white bg-dark mb-3 col-7">
-        <div class="card-body">
-            <p class="card-text">{{ message.text }}</p>
+        <div class="container">
+            <div class="row">
+                {# If the message was sent by the user, color it light and place it towards the right side #}
+                {% if message.user_sender_id == current_user.id %}
+                    <div class="col"></div>
+                    <div class="card text-dark bg-light mb-3 col-7">
+                        <div class="card-body">
+                            <p class="card-text">{{ message.text }}</p>
+                        </div>
+                    </div>
+                {# If the message was sent by the other user, color it dark and place it towards the left side #}
+                {% else %}
+                    <div class="card text-white bg-dark mb-3 col-7">
+                        <div class="card-body">
+                            <p class="card-text">{{ message.text }}</p>
+                        </div>
+                    </div>
+                    <div class="col"></div>
+                {% endif %}
+            </div>
         </div>
-    </div>
-    <div class="col"></div>
-    {% endif %}
-    </div>
-    </div>
     {% endfor %}
+    {# Include form to send a new message #}
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.csrf_token }}
         {{ form.text.label(class="form-label") }} {{ form.text(class="form-control") }} <br>

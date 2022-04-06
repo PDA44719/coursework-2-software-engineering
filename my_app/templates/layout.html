@@ -3,23 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap CSS -->
+    {# Bootstrap CSS #}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}">
-
     <title>Title</title>
 </head>
 <body>
     <header class="container-fluid">
         <br>
-        {% include 'navbar.html' %}
+        {% include 'navbar.html' %}  {# Include the defined navigation bar in the header #}
     </header>
     <main>
         <div class="container">
             {% block content %}{% endblock %}
         </div>
     </main>
-
     <script src="{{ url_for('static', filename='js/boostrap.bundle.js')}}" defer></script>
 </body>
 </html>

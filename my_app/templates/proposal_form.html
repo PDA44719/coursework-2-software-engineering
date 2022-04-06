@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% set location = 'profile' %}
+{% set location = 'my_proposals' %}
 {% block content %}
     {# Display the form validation errors #}
     {% if form.errors %}
@@ -9,12 +9,32 @@
             {% endfor %}
         </div>
     {% endif %}
-
+    <br>
+    {# Button to go back to viewing all the current user's proposals #}
+    <a href="{{ url_for('forum.view_my_proposals') }}" class="btn btn-primary"><- Go back</a>
+    <br><br>
+    {# Define proposal form #}
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.csrf_token }}
         {{ form.title.label(class="form-label") }} {{ form.title(class="form-control") }} <br>
         {{ form.plot.label(class="form-label") }} {{ form.plot(class="form-control") }} <br>
-        <input type="submit" value="Submit Proposal">
+        <p class="form-label">CHARACTERS</p>
+        {# Have a section in the form for each of the characters (name and description) #}
+        {% for character in form.characters %}
+            {{ character.label(class="form-label") }} {{ character(class="form-control") }}
+        {% endfor %} <br>
+        {# Buttons for adding/removing characters #}
+        <input type="submit" class="btn-secondary" name="button" value="Add Character">
+        <input type="submit" class="btn-secondary" name="button" value="Remove Character"><br><br>
+        <p class="form-label">GENRES</p>
+        {# Have a section in the form for each of the genres #}
+        {% for genre in form.genres %}
+            {{ genre.label(class="form-label") }} {{ genre(class="form-control") }}
+        {% endfor %} <br>
+        {# Buttons for adding/removing genres #}
+        <input type="submit" class="btn-secondary" name="button" value="Add Genre">
+        <input type="submit" class="btn-secondary" name="button" value="Remove Genre"><br><br>
+        {# Button for submitting the proposal #}
+        <input type="submit" name="button" value="Submit Proposal">
     </form>
-    <a class="link-primary" href="{{ url_for("auth.login") }}">Already have an account?</a>
 {% endblock %}
