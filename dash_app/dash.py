@@ -5,11 +5,13 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
 from dash_app.chart_creator_module import ChartCreator
 import collections
+from my_app.messaging.routes import check_if_unread
 
 cc = ChartCreator('../dash_app/prepared_dataset.xlsx')  # Generate all the charts
 
 
 def init_dashboard(flask_app):
+    """Initialize the flask app and the layout of the different pages within it"""
     dash_app = dash.Dash(server=flask_app,
                          routes_pathname_prefix="/dash_app/",
                          external_stylesheets=["../static/css/bootstrap.css"]
@@ -21,6 +23,7 @@ def init_dashboard(flask_app):
             html.Br(),
             include_navbar(),
         ]),
+        html.Br(),
         html.Div(id='main_page_content'),
 
         # This row will contain the 4 image cards
@@ -29,8 +32,8 @@ def init_dashboard(flask_app):
                                        "Discover how much revenue (overall and average) each main genre made",
                                        "Which Movie Genres are more Popular?", 'graph-page-1')], width=3),
             dbc.Col([create_graph_card('../static/assets/graph2.png',
-                                       "Learn about the number of films, overall and average revenue for different lengths",
-                                       "What are the Most Popular Runtimes?", 'graph-page-2')], width=3),
+                                       "Learn about the number of films, overall and average revenue for different"
+                                       "lengths", "What are the Most Popular Runtimes?", 'graph-page-2')], width=3),
             dbc.Col([create_graph_card('../static/assets/graph3.png',
                                        "Understand the impact that COVID-19 has had on film revenue",
                                        "How much are Top Movies Making?", 'graph-page-3')], width=3),
@@ -42,6 +45,11 @@ def init_dashboard(flask_app):
 
     # Define the layout of the graph 1 page
     graph1_layout = html.Div([
+        html.Header(className="container-fluid", children=[
+            html.Br(),
+            include_navbar(),
+        ]),
+        html.Br(),
         html.H1(children='Which Movie Genres are more Popular?', style={'textAlign': 'center'}),
         html.Div(),
         dbc.Row([
@@ -72,6 +80,11 @@ def init_dashboard(flask_app):
 
     # Define the layout of the graph 2 page
     graph2_layout = html.Div([
+        html.Header(className="container-fluid", children=[
+            html.Br(),
+            include_navbar(),
+        ]),
+        html.Br(),
         html.H1(children='What are the Most Popular Runtimes?', style={'textAlign': 'center'}),
         html.Div(),
         dbc.Row([
@@ -98,6 +111,11 @@ def init_dashboard(flask_app):
 
     # Define the layout of the graph 3 page
     graph3_layout = html.Div([
+        html.Header(className="container-fluid", children=[
+            html.Br(),
+            include_navbar(),
+        ]),
+        html.Br(),
         html.H1(children='How much are Top Movies Making?', style={'textAlign': 'center'}),
         html.Div(),
         dbc.Row([
@@ -123,6 +141,11 @@ def init_dashboard(flask_app):
 
     # Define the layout of the graph 4 page
     graph4_layout = html.Div([
+        html.Header(className="container-fluid", children=[
+            html.Br(),
+            include_navbar(),
+        ]),
+        html.Br(),
         html.H1(children='How much are Distributors Making?', style={'textAlign': 'center'}),
         html.Div(),
         dbc.Row([
@@ -154,9 +177,10 @@ def init_dashboard(flask_app):
         html.Div(id='page-content', children=[main_page_layout])
     ])
 
-    init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4_layout, type4_1_row, type4_2_row, main_page_layout)
+    init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4_layout, type4_1_row, type4_2_row,
+                   main_page_layout)
 
-    return dash_app.server
+    return dash_app
 
 
 def create_graph_card(image_source, description, question, button_url):
@@ -230,13 +254,24 @@ def create_checklist_card(checklist_id, checklist_options):
 
 
 def include_navbar():
+    """Create the navigation bar that will integrate both the flask and the dash apps."""
     navbar = html.Nav(className="navbar navbar-expand-lg navbar-dark bg-primary", children=[
-        html.A('Navbar', className="navbar-brand", href='#'),
+        html.A('FilmApp', className="navbar-brand"),
         html.Div(className="collapse navbar-collapse", id="navbarColor01", children=[
             html.Ul(className="navbar-nav me-auto", children=[
-                html.Li(className="nav-item", children=[html.A('Home', className="nav-link", href="/")]),
-                html.Li(className="nav-item", children=[html.A('Dashboard', className="nav-link active", href="/dash_app/")]),
-                html.Li(className="nav-item", children=[html.A('Authorization', className="nav-link", href="/login/")]),
+                html.Li(className="nav-item", children=[html.A('Home', className="nav-link", href='/')]),
+                html.Li(className="nav-item",
+                        children=[html.A('Dashboard', className="nav-link active", href="/dash_app/")]),
+                html.Li(className="nav-item",
+                        children=[html.A('Proposals', className="nav-link", href="/display_proposals")]),
+                html.Li(className="nav-item",
+                        children=[html.A('My Proposals', className="nav-link", href="/my_proposals")]),
+                html.Div(id="messages", children=[
+                    html.Li(className="nav-item",
+                            children=[html.A('Messages', className="nav-link", href="/view_messages")]),
+
+                ]),
+                html.Li(className="nav-item", children=[html.A('Logout', className="nav-link", href='/logout')])
             ])
         ]),
     ])
@@ -244,10 +279,31 @@ def include_navbar():
     return navbar
 
 
-def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4_layout, type4_1_row, type4_2_row, main_page_layout):
-    # Define a series of callbacks to allow the user to interact with the page
+def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4_layout, type4_1_row, type4_2_row,
+                   main_page_layout):
+    """
+    Define a series of callbacks that will allow the user to interact with the dash_app.
+    dash_app : dash.dash.Dash
+        The created Dash app.
+    graph1_layout : dash.html.Div.Div
+        The defined layout for the graph 1 page.
+    graph2_layout : dash.html.Div.Div
+        The defined layout for the graph 2 page.
+    graph3_layout : dash.html.Div.Div
+        The defined layout for the graph 3 page.
+    graph4_layout : dash.html.Div.Div
+        The defined layout for the graph 4 page.
+    type4_1_row : dash_bootstrap_components._components.Row.Row
+        The row defined for checklist type4_1 value.
+    type4_2_row : dash_bootstrap_components._components.Row.Row
+        The row define for checklist type4_2 value.
+    main_page_layout : dash.html.Div.Div
+        The defined layout for the main page.
+
+    """
+
     @dash_app.callback(Output('page-content', 'children'),
-                  Input('url', 'pathname'))
+                       Input('url', 'pathname'))
     def navigate_pages(pathname):
         """
         Navigate through the different pages of the app.
@@ -263,6 +319,7 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
             The layout of the page that will be displayed.
 
         """
+        print("I am here hahaha")
         if pathname == '/dash_app/graph-page-1':
             return graph1_layout
 
@@ -279,8 +336,8 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
             return main_page_layout
 
     @dash_app.callback(Output('graph_1', 'figure'),
-                  Input('dropdown1', 'value'),
-                  Input('chck1', 'value'))
+                       Input('dropdown1', 'value'),
+                       Input('chck1', 'value'))
     def modify_graph_1(dropdown_value, selected_chart_options):
         """
         Change graph_1 depending on the dropdown1 and chck1 options selected.
@@ -290,8 +347,8 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
         dropdown_value : str
             The selected dropdown value. Available options: Mean Revenue, Overall Revenue.
         selected_chart_options : str
-            The selected checklist value. Available options: Show Preferred Genres, Show Error Bars (when Mean Revenue is
-            chosen) and Show Error Bars (when Overall Genre Revenue is chosen).
+            The selected checklist value. Available options: Show Preferred Genres, Show Error Bars (when Mean Revenue
+            is chosen) and Show Error Bars (when Overall Genre Revenue is chosen).
 
         Returns
         -------
@@ -327,9 +384,8 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
         else:  # User has chosen Mean Revenue and no additional checklist options
             return cc.fig1
 
-
     @dash_app.callback(Output('graph_2', 'figure'),
-                  [Input('dropdown2', 'value')])
+                       [Input('dropdown2', 'value')])
     def modify_graph_2(value):
         """
         Change graph 2 depending on the value selected on the dropdown bar.
@@ -352,9 +408,8 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
         else:  # User has chosen Number of Movies
             return cc.fig9
 
-
     @dash_app.callback(Output('chck1', 'options'),
-                  Input('dropdown1', 'value'))
+                       Input('dropdown1', 'value'))
     def modify_checklist_1(dropdown_value):
         """
         Modify the options of chck1 depending on the dropdown1 value.
@@ -376,9 +431,8 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
         else:  # User has chosen Overall Revenue
             return [{'label': 'Show Preferred Genres', 'value': 'SPG'}]
 
-
     @dash_app.callback(Output('modifiable_row', 'children'),
-                  Input('dropdown4', 'value'))
+                       Input('dropdown4', 'value'))
     def modify_graph4_layout_row(dropdown_value):
         """
         Change modifiable_row depending on the value of dropdown4 selected.
@@ -399,9 +453,8 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
         else:  # User has chosen Mean Revenue
             return type4_2_row
 
-
     @dash_app.callback(Output('graph_4', 'figure'),
-                  Input('chck4', 'value'))
+                       Input('chck4', 'value'))
     def modify_graph_4(checklist_value):
         """
         Change graph_4 depending on the selected value of chck4.
@@ -421,3 +474,35 @@ def init_callbacks(dash_app, graph1_layout, graph2_layout, graph3_layout, graph4
             return cc.fig13
         else:  # User has selected the Show Error Bars option
             return cc.fig12
+
+    @dash_app.callback(Output('messages', 'children'),
+                       Input('url', 'pathname'))
+    def unread_messages_notification(pathname):
+        """
+        Display an unread messages notification symbol (red dot) if the current user has any unread messages.
+
+        Arguments
+        ---------
+        pathname : str
+            The dash_app path the user is currently located at (this value will not be used, but everytime the user
+            enters the dash app, the check_if_unread function will be called).
+
+        Returns
+        -------
+        list
+            A list containing the dash.html.Li.Li component to be displayed in the navigation bar. If there are unread
+            messages, the notification symbol will appear. Otherwise, no notification symbol will be displayed.
+
+        """
+        if check_if_unread():
+            return [html.Li(className="nav-item",
+                            children=[html.A(['Messages ', html.Span(
+                                className="position-relative top-0 start-0 translate-middle badge border border-light\
+                                           rounded-circle bg-danger p-2",
+                                children=[html.Span('unread messages', className='visually-hidden')])],
+                                             className="nav-link", href="/view_messages"),
+                                      ])]
+
+        else:
+            return [html.Li(className="nav-item",
+                            children=[html.A('Messages', className="nav-link", href="/view_messages")])]
