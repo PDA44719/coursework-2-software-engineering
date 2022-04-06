@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+{% set location = 'my_proposals' %}
+{% block content %}
+    {# If there are any flashed messages, display them #}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-warning" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% if not proposals %}
+        <br><h4>You have submitted no proposals</h4>
+    {% else %}
+        {# Go through each user proposal #}
+        {% for proposal in proposals %}
+            <div class="container">
+                <div class="row">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ proposal.title }}</h5>
+                            {# If the proposal plot has less than 400 characters, display the plot entirely #}
+                            {% if proposal.plot|length < 400 %}
+                                <p class="card-text">{{ proposal.plot }}</p>
+                            {# If the proposal plot is longer than 400 characters, only display the first 400 #}
+                            {% else %}
+                                <p class="card-text">{{ proposal.plot[:400] + "..." }}</p>
+                            {% endif %}
+                            <p class="card-text">
+                            {# Go through all the genres in the database #}
+                            {% for genre in genres %}
+                                {# Only show the genres of the specific proposal that is being displayed #}
+                                {% if genre.proposal_id == proposal.id %}
+                                    <span class="badge bg-primary">{{ genre.genre_name }}</span>
+                                {% endif %}
+                            {% endfor %}
+                            </p>
+                            {# Button to edit proposal #}
+                            <a href="{{ url_for('forum.edit_proposal', proposal_id=proposal.id) }}" class="btn
+                                                                                                           btn-primary">
+                                Edit Proposal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+        {% endfor %}
+    {% endif %}
+    {# Buttom to create new proposal #}
+    <h4>
+        <a href="{{ url_for('forum.create_proposal') }}" class="btn btn-primary align-content-center">
+            Create New Proposal
+        </a>
+    </h4>
+{% endblock %}
