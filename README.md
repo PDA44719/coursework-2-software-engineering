@@ -6,7 +6,17 @@ Please, check them if you see it fit.
 
 ## Requirements
 The requirements have been specified on [requirements.txt](requirements.txt). They can all be installed using the
-```pip install ...``` command.
+```pip install ...``` command. Before doing so, however, ensure that pip is upgraded ```pip install --upgade pip```.
+
+## Running the app
+It is recommended that an IDE is used. That is because certain imports like ````from my_app import create_app````
+will not be recognized if executed from a Windows command. If you must execute it from a windows command, please
+include the following two lines at the top of [app.py](my_app/app.py), so that all the imports work appropriately:
+
+- ``import sys``
+
+- ``sys.path.append('path/to/coursework/file/main')``
+
 
 ## Application Details
 Two different functionalities have been included in the app, which go beyond what was taught in the course:

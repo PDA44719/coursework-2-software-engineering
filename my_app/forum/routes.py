@@ -18,7 +18,8 @@ def create_proposal():
         form = modify_char_and_genre_entries(form)
         if request.form['button'] == 'Submit Proposal' and form.validate_on_submit():  # Form was completed & validated
             create_database_entries(form)
-            return redirect(url_for('main.index'))
+            flash('Your proposal has been created')
+            return redirect(url_for('forum.view_my_proposals'))
     return render_template('proposal_form.html', form=form, unread_messages=check_if_unread())
 
 
