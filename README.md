@@ -4,6 +4,9 @@ Here is the [link to my repository](https://github.com/ucl-comp0035/comp0034-cw2
 consistently throughout the duration of the coursework. Furthermore, **weekly reports** have been posted on Moodle.
 Please, check them if you see it fit.
 
+## Demo Video
+Here is the link to the video: [Flask App Explanation](https://youtu.be/6pf_lrwE6oo).
+
 ## Requirements
 The requirements have been specified on [requirements.txt](requirements.txt). They can all be installed using the
 ```pip install ...``` command. Before doing so, however, ensure that pip is upgraded ```pip install --upgade pip```.
